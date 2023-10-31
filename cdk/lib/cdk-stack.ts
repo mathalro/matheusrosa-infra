@@ -1,12 +1,14 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import { ARecord, CnameRecord, HostedZone, PublicHostedZone, RecordTarget, ZoneDelegationRecord } from 'aws-cdk-lib/aws-route53';
 import { readFileSync } from 'fs';
 
 export class CdkStack extends cdk.Stack {
-
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    const dns = 'matheusrosa.com';
 
     // VPC
     const vpc = new ec2.Vpc(this, 'website-vpc', {
@@ -74,5 +76,28 @@ export class CdkStack extends cdk.Stack {
     // User data
     const userDataScript = readFileSync('./lib/user-data.sh', 'utf-8');
     ec2Instance.addUserData(userDataScript);
+
+    // Elastic IP
+    const eip = new ec2.CfnEIP(this, 'ip', {
+      instanceId: ec2Instance.instanceId
+    });
+
+    // DNS
+    const publicHostedZone = new PublicHostedZone(this, 'public-hosted-zone', {
+      zoneName: dns,
+    });
+
+    const domain = new ARecord(this, 'domain', {
+      zone: publicHostedZone,
+      target: RecordTarget.fromIpAddresses(eip.attrPublicIp),
+      ttl: cdk.Duration.minutes(5)
+    })
+
+    const wwwdomain = new CnameRecord(this, 'www-domain', {
+      recordName: 'www',
+      zone: publicHostedZone,
+      domainName: dns,
+      ttl: cdk.Duration.minutes(5)
+    })
   };
 }
