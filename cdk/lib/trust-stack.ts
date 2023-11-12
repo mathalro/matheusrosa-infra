@@ -36,7 +36,7 @@ export class TrustStack extends cdk.Stack {
       ),
     });
 
-    const assumeCdkDeploymnetRoles = new iam.PolicyStatement({
+    const assumeCdkDeploymentRoles = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: ["sts:AssumeRole"],
       resources: ["arn:aws:iam::*:role/cdk-*"],
@@ -51,7 +51,14 @@ export class TrustStack extends cdk.Stack {
       },
     });
 
-    githubActionRole.addToPolicy(assumeCdkDeploymnetRoles);
+    const assumeLambdaDeploymentRoles = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ["lambda:UpdateFunctionCode"],
+      resources: ["arn:aws:lambda:*:*:matheusrosa-*"],
+    });
+
+    githubActionRole.addToPolicy(assumeCdkDeploymentRoles);
+    githubActionRole.addToPolicy(assumeLambdaDeploymentRoles);
 
     new cdk.CfnOutput(this, 'github-actions-role-arn', {
       value: githubActionRole.roleArn,

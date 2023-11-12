@@ -2,6 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import { ARecord, CnameRecord, PublicHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { readFileSync } from 'fs';
 
@@ -119,11 +120,25 @@ export class WebserverStack extends cdk.Stack {
     // });
 
     // Define an empty Lambda function
-    const myLambda = new lambda.Function(this, 'lambda-api', {
+    const lambdaApi = new lambda.Function(this, 'lambda-api', {
       runtime: lambda.Runtime.NODEJS_14_X,
       handler: 'index.handler',
       code: lambda.Code.fromInline(`exports.handler = async function(event:any) { return "Hello, CDK!"; }`),
       functionName: 'matheusrosa-application'
     });
+
+    // Create the private API Gateway
+    const api = new apigateway.RestApi(this, 'private-api', {
+      endpointConfiguration: { types: [apigateway.EndpointType.PRIVATE] },
+      deployOptions: {
+        stageName: 'prod',
+        loggingLevel: apigateway.MethodLoggingLevel.INFO,
+        dataTraceEnabled: true,
+      }
+    });
+
+    // Add a resource and method to the API
+    const resource = api.root.addResource('articles');
+    resource.addMethod('GET', new apigateway.LambdaIntegration(lambdaApi));
   };
 }
