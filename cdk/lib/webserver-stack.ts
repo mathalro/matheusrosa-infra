@@ -128,12 +128,19 @@ export class WebserverStack extends cdk.Stack {
     });
 
     // Create the private API Gateway
-    const api = new apigateway.LambdaRestApi(this, 'api-gateway', {
-      handler: lambdaApi 
+    const api = new apigateway.RestApi(this, 'api-gateway', {
+      restApiName: 'matheusrosa-api',
+      description: 'Private API Gateway for the matheusrosa.com website.'
     });
 
-    // Add a resource and method to the API
+    // Integrate with lambda
+    const integration = new apigateway.LambdaIntegration(lambdaApi, {
+      requestTemplates: {
+        'application/json': '{ "statusCode": "200" }'
+      }
+    });
+
     const resource = api.root.addResource('articles');
-    resource.addMethod('GET');
+    resource.addMethod('GET', integration);
   };
 }
