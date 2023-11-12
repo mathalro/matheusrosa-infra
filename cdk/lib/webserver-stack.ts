@@ -128,17 +128,12 @@ export class WebserverStack extends cdk.Stack {
     });
 
     // Create the private API Gateway
-    const api = new apigateway.RestApi(this, 'private-api', {
-      endpointConfiguration: { types: [apigateway.EndpointType.PRIVATE] },
-      deployOptions: {
-        stageName: 'prod',
-        loggingLevel: apigateway.MethodLoggingLevel.INFO,
-        dataTraceEnabled: true,
-      }
+    const api = new apigateway.LambdaRestApi(this, 'api-gateway', {
+      handler: lambdaApi 
     });
 
     // Add a resource and method to the API
     const resource = api.root.addResource('articles');
-    resource.addMethod('GET', new apigateway.LambdaIntegration(lambdaApi));
+    resource.addMethod('GET');
   };
 }
