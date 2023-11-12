@@ -28,6 +28,6 @@ jobs:
         with:
           cdk_subcommand: 'deploy'
           cdk_stack: 'WebserverStack'
-          cdk_args: 'require-approval never'
+          cdk_args: '--require-approval never'
           actions_comment: false
           working_dir: './cdk'
