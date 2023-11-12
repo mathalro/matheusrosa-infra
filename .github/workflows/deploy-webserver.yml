@@ -1,4 +1,4 @@
-arname: Deploy WebserverStack
+name: Deploy WebserverStack
 
 permissions:
   id-token: write
@@ -10,7 +10,7 @@ on:
       - main
 
 jobs:
-  deploy_lambda_stack:
+  deploy_webserver_stack:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
