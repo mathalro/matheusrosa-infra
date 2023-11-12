@@ -102,20 +102,21 @@ export class WebserverStack extends cdk.Stack {
     })
 
     // Create an articles ddb table
-    const table = new cdk.aws_dynamodb.Table(this, 'articles-table', {
-      billingMode: cdk.aws_dynamodb.BillingMode.PROVISIONED,
-      tableName: 'articles',
-      partitionKey: {
-        name: 'userId',
-        type: cdk.aws_dynamodb.AttributeType.STRING,
-      },
-      sortKey: {
-        name: 'createdAt',
-        type: cdk.aws_dynamodb.AttributeType.NUMBER,
-      },
-      readCapacity: 1,
-      writeCapacity: 1
-    });
+    // const table = new cdk.aws_dynamodb.Table(this, 'articles-table', {
+    //   billingMode: cdk.aws_dynamodb.BillingMode.PROVISIONED,
+    //   tableName: 'articles',
+    //   partitionKey: {
+    //     name: 'userId',
+    //     type: cdk.aws_dynamodb.AttributeType.STRING,
+    //   },
+    //   sortKey: {
+    //     name: 'createdAt',
+    //     type: cdk.aws_dynamodb.AttributeType.NUMBER,
+    //   },
+    //   readCapacity: 1,
+    //   writeCapacity: 1,
+    //   removalPolicy: cdk.RemovalPolicy.DESTROY
+    // });
 
     // Define an empty Lambda function
     const myLambda = new lambda.Function(this, 'lambda-api', {
