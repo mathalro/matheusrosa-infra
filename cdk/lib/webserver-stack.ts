@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { ARecord, CnameRecord, PublicHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { readFileSync } from 'fs';
 
@@ -101,7 +102,7 @@ export class WebserverStack extends cdk.Stack {
     })
 
     // Create an articles ddb table
-    const table = new cdk.aws_dynamodb.Table(this, 'table', {
+    const table = new cdk.aws_dynamodb.Table(this, 'articles-table', {
       billingMode: cdk.aws_dynamodb.BillingMode.PROVISIONED,
       tableName: 'articles',
       partitionKey: {
@@ -114,6 +115,14 @@ export class WebserverStack extends cdk.Stack {
       },
       readCapacity: 1,
       writeCapacity: 1
+    });
+
+    // Define an empty Lambda function
+    const myLambda = new lambda.Function(this, 'lambda-api', {
+      runtime: lambda.Runtime.NODEJS_14_X,
+      handler: 'index.handler',
+      code: lambda.Code.fromInline(`exports.handler = async function(event:any) { return "Hello, CDK!"; }`),
+      functionName: 'matheusrosa-application'
     });
   };
 }

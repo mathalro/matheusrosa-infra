@@ -11,11 +11,6 @@ export class TrustStack extends cdk.Stack {
       description: 'Github organization that owns the repository',
     });
 
-    const githubRepo = new cdk.CfnParameter(this, 'GitHubRepo', {
-      type: 'String',
-      description: 'Github repository that will run the action',
-    });
-
     const githubProvider = new iam.CfnOIDCProvider(this, "git-hub-oid-provider", {
       thumbprintList: ["1b511abead59c6ce207077c0bf0e0043b1382612"],
       url: "https://token.actions.githubusercontent.com",
@@ -29,11 +24,11 @@ export class TrustStack extends cdk.Stack {
           StringLike: {
             // Specify that subscribers must be main branch of repository
             "token.actions.githubusercontent.com:sub": [
-              `repo:${githubOrg.valueAsString}/${githubRepo.valueAsString}:ref:refs/heads/main`,
+              `repo:${githubOrg.valueAsString}/matheusrosa-*:ref:refs/heads/main`,
             ]
           },
           StringEquals: {
-            // Specify that audito must be STS
+            // Specify that auditor must be STS
             "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
           }
         },
