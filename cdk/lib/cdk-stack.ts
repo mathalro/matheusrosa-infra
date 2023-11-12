@@ -1,10 +1,10 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
-import { ARecord, CnameRecord, HostedZone, PublicHostedZone, RecordTarget, ZoneDelegationRecord } from 'aws-cdk-lib/aws-route53';
+import { ARecord, CnameRecord, PublicHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { readFileSync } from 'fs';
 
-export class CdkStack extends cdk.Stack {
+export class WebserverStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -22,7 +22,7 @@ export class CdkStack extends cdk.Stack {
         }
       ]
     });
-    
+
     // Security Group
     const sg = new ec2.SecurityGroup(this, 'website-sg', {
       vpc,
@@ -99,5 +99,21 @@ export class CdkStack extends cdk.Stack {
       domainName: dns,
       ttl: cdk.Duration.minutes(5)
     })
+
+    // Create an articles ddb table
+    const table = new cdk.aws_dynamodb.Table(this, 'table', {
+      billingMode: cdk.aws_dynamodb.BillingMode.PROVISIONED,
+      tableName: 'articles',
+      partitionKey: {
+        name: 'userId',
+        type: cdk.aws_dynamodb.AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'createdAt',
+        type: cdk.aws_dynamodb.AttributeType.NUMBER,
+      },
+      readCapacity: 1,
+      writeCapacity: 1
+    });
   };
 }
