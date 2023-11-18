@@ -105,7 +105,7 @@ export class WebserverStack extends cdk.Stack {
     //Create an articles ddb table
     const table = new cdk.aws_dynamodb.Table(this, 'articles-table', {
       billingMode: cdk.aws_dynamodb.BillingMode.PROVISIONED,
-      tableName: 'articles-new',
+      tableName: 'articles',
       partitionKey: {
         name: 'userId',
         type: cdk.aws_dynamodb.AttributeType.STRING,
