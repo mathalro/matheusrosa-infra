@@ -144,5 +144,6 @@ export class WebserverStack extends cdk.Stack {
 
     const resource = api.root.addResource('articles');
     resource.addMethod('GET', integration);
+    resource.addMethod('POST', integration);
   };
 }
