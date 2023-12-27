@@ -3,6 +3,8 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as acm from 'aws-cdk-lib/aws-certificatemanager';
+
 import { ARecord, CnameRecord, PublicHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { readFileSync } from 'fs';
 
@@ -88,7 +90,13 @@ export class WebserverStack extends cdk.Stack {
     const publicHostedZone = new PublicHostedZone(this, 'public-hosted-zone', {
       zoneName: dns,
     });
-
+    
+    // Certificate
+    const certificate = new acm.Certificate(this, 'certificate', {
+      domainName: dns,
+      validation: acm.CertificateValidation.fromDns(publicHostedZone),
+    });
+    
     const domain = new ARecord(this, 'domain', {
       zone: publicHostedZone,
       target: RecordTarget.fromIpAddresses(eip.attrPublicIp),
