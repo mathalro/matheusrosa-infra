@@ -5,8 +5,12 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 
+import * as elb from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import { aws_elasticloadbalancingv2_targets as elasticloadbalancingv2_targets } from 'aws-cdk-lib';
+
 import { ARecord, CnameRecord, PublicHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { readFileSync } from 'fs';
+import { LoadBalancerTarget } from 'aws-cdk-lib/aws-route53-targets';
 
 export class WebserverStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
@@ -48,7 +52,7 @@ export class WebserverStack extends cdk.Stack {
     sg.addIngressRule(
       ec2.Peer.anyIpv4(),
       ec2.Port.tcp(443),
-      'allow HTTP traffic from anywhere',
+      'allow HTTPS traffic from anywhere',
     );
 
     // Role for EC2 instance
@@ -96,21 +100,39 @@ export class WebserverStack extends cdk.Stack {
       domainName: dns,
       validation: acm.CertificateValidation.fromDns(publicHostedZone),
     });
+        
+    // Load Balancer
+    const lb = new elb.ApplicationLoadBalancer(this, 'load-balancer', {
+      vpc,
+      internetFacing: true
+    });
+
+    const listener = lb.addListener('listener', {
+      port: 443,
+      open: true
+    });
     
+    // Listener
+    const instanceTarget = new elasticloadbalancingv2_targets.InstanceTarget(ec2Instance);
+    listener.addTargets('application-fleet', {
+      port: 80,
+      targets: [instanceTarget]
+    });
+    listener.addCertificates('listener-certificate', [certificate]);
     const domain = new ARecord(this, 'domain', {
       zone: publicHostedZone,
-      target: RecordTarget.fromIpAddresses(eip.attrPublicIp),
+      target: RecordTarget.fromAlias(new LoadBalancerTarget(lb)),
       ttl: cdk.Duration.minutes(5)
-    })
+    });
 
     const wwwdomain = new CnameRecord(this, 'www-domain', {
       recordName: 'www',
       zone: publicHostedZone,
       domainName: dns,
       ttl: cdk.Duration.minutes(5)
-    })
+    });
 
-    //Create an articles ddb table
+    // Create an articles ddb table
     const table = new cdk.aws_dynamodb.Table(this, 'articles-table', {
       billingMode: cdk.aws_dynamodb.BillingMode.PROVISIONED,
       tableName: 'articles',
