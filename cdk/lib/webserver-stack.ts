@@ -138,11 +138,12 @@ export class WebserverStack extends cdk.Stack {
     
     // Listener
     const instanceTarget = new elasticloadbalancingv2_targets.InstanceTarget(ec2Instance);
+    
     listener.addTargets('application-fleet', {
       port: 80,
-      targets: [instanceTarget],
-      healthCheck: 
+      targets: [instanceTarget] 
     });
+
     listener.addCertificates('listener-certificate', [certificate]);
     const domain = new ARecord(this, 'domain', {
       zone: publicHostedZone,
