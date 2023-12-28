@@ -100,11 +100,35 @@ export class WebserverStack extends cdk.Stack {
       domainName: dns,
       validation: acm.CertificateValidation.fromDns(publicHostedZone),
     });
-        
+    
     // Load Balancer
+    const lbSg = new ec2.SecurityGroup(this, 'lb-sg', {
+      vpc,
+      allowAllOutbound: true,
+    });
+
+    lbSg.addIngressRule(
+      ec2.Peer.anyIpv4(),
+      ec2.Port.tcp(22),
+      'allow SSH access from anywhere',
+    );
+
+    lbSg.addIngressRule(
+      ec2.Peer.anyIpv4(),
+      ec2.Port.tcp(80),
+      'allow HTTP traffic from anywhere',
+    );
+
+    lbSg.addIngressRule(
+      ec2.Peer.anyIpv4(),
+      ec2.Port.tcp(443),
+      'allow HTTPS traffic from anywhere',
+    );
+
     const lb = new elb.ApplicationLoadBalancer(this, 'load-balancer', {
       vpc,
-      internetFacing: true
+      internetFacing: true,
+      securityGroup: lbSg 
     });
 
     const listener = lb.addListener('listener', {
@@ -116,7 +140,8 @@ export class WebserverStack extends cdk.Stack {
     const instanceTarget = new elasticloadbalancingv2_targets.InstanceTarget(ec2Instance);
     listener.addTargets('application-fleet', {
       port: 80,
-      targets: [instanceTarget]
+      targets: [instanceTarget],
+      healthCheck: 
     });
     listener.addCertificates('listener-certificate', [certificate]);
     const domain = new ARecord(this, 'domain', {
