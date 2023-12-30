@@ -175,6 +175,23 @@ export class WebserverStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY
     });
 
+    // Create an users ddb table
+    const usersTable = new cdk.aws_dynamodb.Table(this, 'users-table', {
+      billingMode: cdk.aws_dynamodb.BillingMode.PROVISIONED,
+      tableName: 'users',
+      partitionKey: {
+        name: 'userId',
+        type: cdk.aws_dynamodb.AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'name',
+        type: cdk.aws_dynamodb.AttributeType.STRING,
+      },
+      readCapacity: 1,
+      writeCapacity: 1,
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    });
+
     // Define an empty Lambda function
     const lambdaApi = new lambda.Function(this, 'lambda-api', {
       runtime: lambda.Runtime.NODEJS_14_X,
@@ -197,9 +214,14 @@ export class WebserverStack extends cdk.Stack {
     });
 
     table.grantReadWriteData(lambdaApi);
+    usersTable.grantReadWriteData(lambdaApi);
 
-    const resource = api.root.addResource('articles');
-    resource.addMethod('GET', integration);
-    resource.addMethod('POST', integration);
+    const articleResource = api.root.addResource('articles');
+    articleResource.addMethod('GET', integration);
+    articleResource.addMethod('POST', integration);
+
+    const userResource = api.root.addResource('users');
+    userResource.addMethod('POST', integration);
+    userResource.addMethod('GET', integration);
   };
 }
