@@ -183,10 +183,6 @@ export class WebserverStack extends cdk.Stack {
         name: 'userId',
         type: cdk.aws_dynamodb.AttributeType.STRING,
       },
-      sortKey: {
-        name: 'name',
-        type: cdk.aws_dynamodb.AttributeType.STRING,
-      },
       readCapacity: 1,
       writeCapacity: 1,
       removalPolicy: cdk.RemovalPolicy.DESTROY
