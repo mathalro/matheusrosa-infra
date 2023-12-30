@@ -176,7 +176,7 @@ export class WebserverStack extends cdk.Stack {
     });
 
     // Create an users ddb table
-    const usersTable = new cdk.aws_dynamodb.Table(this, 'users-table', {
+    const usersTable = new cdk.aws_dynamodb.Table(this, 'new-users-table', {
       billingMode: cdk.aws_dynamodb.BillingMode.PROVISIONED,
       tableName: 'users',
       partitionKey: {
