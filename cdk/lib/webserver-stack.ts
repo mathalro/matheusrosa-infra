@@ -87,24 +87,25 @@ export class WebserverStack extends cdk.Stack {
     // User data
     const userDataScript = readFileSync('./lib/user-data.sh', 'utf-8');
 
-    // ASG
-    const asg = new autoscaling.AutoScalingGroup(this, 'auto-scaling-group', {
-      vpc: vpc,
-      instanceType: ec2.InstanceType.of(
-        ec2.InstanceClass.T2,
-        ec2.InstanceSize.MICRO,
-      ),
+    // Launch Template
+    const launchTemplate = new ec2.LaunchTemplate(this, 'webserver-launch-template', {
       machineImage: new ec2.AmazonLinuxImage({
         generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
       }),
-      instanceRole: instanceRole,
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MICRO),
+      keyName: 'ec2-key-pair',
+      securityGroup: sg,
+      associatePublicIpAddress: true,
+      userData: ec2.UserData.custom(userDataScript),
+    });
+
+    // ASG
+    const asg = new autoscaling.AutoScalingGroup(this, 'auto-scaling-group', {
+      vpc,
       minCapacity: 1,
       maxCapacity: 2,
-      desiredCapactiy: 2,
-      associatePublicIpAddress: true,
-      securityGroup: [sg],
-      keyName: 'ec2-key-pair',
-      userData: ec2.UserData.custom(userDataScript)
+      desiredCapacity: 2,
+      launchTemplate: launchTemplate,
     });
 
     // DNS
