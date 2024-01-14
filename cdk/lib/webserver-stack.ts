@@ -103,8 +103,8 @@ export class WebserverStack extends cdk.Stack {
     const asg = new autoscaling.AutoScalingGroup(this, 'auto-scaling-group', {
       vpc,
       minCapacity: 1,
-      maxCapacity: 2,
-      desiredCapacity: 2,
+      maxCapacity: 1,
+      desiredCapacity: 1,
       launchTemplate: launchTemplate,
     });
 
