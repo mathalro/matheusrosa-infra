@@ -21,6 +21,7 @@ SECRECT_JSON=$(aws --region $REGION secretsmanager get-secret-value --secret-id 
 TOKEN=$(echo $SECRECT_JSON | jq -r '."ghcr-token"')
 
 # Download latest docker image
+echo "Using token: $TOKEN to login in ghcr.io"
 docker login ghcr.io -u mathalro -p $TOKEN
 docker pull ghcr.io/mathalro/matheusrosa-website/website
 docker pull ghcr.io/mathalro/matheusrosa-website/api
@@ -30,3 +31,4 @@ docker pull ghcr.io/mathalro/matheusrosa-website/nginx
 sudo yum -y install git
 git clone https://github.com/mathalro/matheusrosa-website.git
 cd matheusrosa-website
+docker-compose -f docker-compose.prod.yml up -d

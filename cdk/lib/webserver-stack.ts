@@ -65,24 +65,9 @@ export class WebserverStack extends cdk.Stack {
       ],
     });
 
-    // // EC2 instance
-    // const ec2Instance = new ec2.Instance(this, 'ec2-instance', {
-    //   vpc,
-    //   vpcSubnets: {
-    //     subnetType: ec2.SubnetType.PUBLIC,
-    //   },
-    //   role: instanceRole,
-    //   securityGroup: sg,
-    //   instanceType: ec2.InstanceType.of(
-    //     ec2.InstanceClass.T2,
-    //     ec2.InstanceSize.MICRO,
-    //   ),
-    //   machineImage: new ec2.AmazonLinuxImage({
-    //     generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
-    //   }),
-    //   keyName: 'ec2-key-pair',
-    // });
-
+    const instanceProfile = new iam.InstanceProfile(this, 'instance-profile', {
+      role: instanceRole,
+    });
     
     // User data
     const userDataScript = readFileSync('./lib/user-data.sh', 'utf-8');
@@ -97,6 +82,7 @@ export class WebserverStack extends cdk.Stack {
       securityGroup: sg,
       associatePublicIpAddress: true,
       userData: ec2.UserData.custom(userDataScript),
+      instanceProfile: instanceProfile,
     });
 
     // ASG
