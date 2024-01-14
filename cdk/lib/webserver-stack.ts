@@ -4,6 +4,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
+import * as autoscaling from 'aws-cdk-lib/aws-autoscaling';
 
 import * as elb from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import { aws_elasticloadbalancingv2_targets as elasticloadbalancingv2_targets } from 'aws-cdk-lib';
@@ -64,14 +65,31 @@ export class WebserverStack extends cdk.Stack {
       ],
     });
 
-    // EC2 instance
-    const ec2Instance = new ec2.Instance(this, 'ec2-instance', {
-      vpc,
-      vpcSubnets: {
-        subnetType: ec2.SubnetType.PUBLIC,
-      },
-      role: instanceRole,
-      securityGroup: sg,
+    // // EC2 instance
+    // const ec2Instance = new ec2.Instance(this, 'ec2-instance', {
+    //   vpc,
+    //   vpcSubnets: {
+    //     subnetType: ec2.SubnetType.PUBLIC,
+    //   },
+    //   role: instanceRole,
+    //   securityGroup: sg,
+    //   instanceType: ec2.InstanceType.of(
+    //     ec2.InstanceClass.T2,
+    //     ec2.InstanceSize.MICRO,
+    //   ),
+    //   machineImage: new ec2.AmazonLinuxImage({
+    //     generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
+    //   }),
+    //   keyName: 'ec2-key-pair',
+    // });
+
+    
+    // User data
+    const userDataScript = readFileSync('./lib/user-data.sh', 'utf-8');
+
+    // ASG
+    const asg = new autoscaling.AutoScalingGroup(this, 'auto-scaling-group', {
+      vpc: vpc,
       instanceType: ec2.InstanceType.of(
         ec2.InstanceClass.T2,
         ec2.InstanceSize.MICRO,
@@ -79,16 +97,14 @@ export class WebserverStack extends cdk.Stack {
       machineImage: new ec2.AmazonLinuxImage({
         generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
       }),
+      instanceRole: instanceRole,
+      minCapacity: 1,
+      maxCapacity: 2,
+      desiredCapactiy: 2,
+      associatePublicIpAddress: true,
+      securityGroup: [sg],
       keyName: 'ec2-key-pair',
-    });
-
-    // User data
-    const userDataScript = readFileSync('./lib/user-data.sh', 'utf-8');
-    ec2Instance.addUserData(userDataScript);
-
-    // Elastic IP
-    const eip = new ec2.CfnEIP(this, 'ip', {
-      instanceId: ec2Instance.instanceId
+      userData: ec2.UserData.custom(userDataScript)
     });
 
     // DNS
@@ -131,18 +147,16 @@ export class WebserverStack extends cdk.Stack {
       internetFacing: true,
       securityGroup: lbSg 
     });
-
-    const listener = lb.addListener('listener', {
-      port: 443,
-      open: true
+    
+    const targetGroup = new elb.ApplicationTargetGroup(this, 'MyTargetGroup', {
+      vpc: vpc,
+      port: 80,
+      targets: [asg],
     });
     
-    // Listener
-    const instanceTarget = new elasticloadbalancingv2_targets.InstanceTarget(ec2Instance);
-    
-    listener.addTargets('application-fleet', {
-      port: 80,
-      targets: [instanceTarget] 
+    const listener = lb.addListener('listener', {
+      port: 443,
+      defaultTargetGroups: [targetGroup],
     });
 
     listener.addCertificates('listener-certificate', [certificate]);
