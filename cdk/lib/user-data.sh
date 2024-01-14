@@ -1,16 +1,17 @@
 #!/bin/bash
-yum update -y
+
+# Update linux packages
 sudo su
-
-chmod 2775 /usr/share/nginx/html
-find /usr/share/nginx/html -type d -exec chmod 2775 {} \;
-find /usr/share/nginx/html -type f -exec chmod 0664 {} \;
-
-echo "<h1>Maintanance in progress</h1>" > /usr/share/nginx/html/index.html
-
 sudo yum update -y
-sudo yum install -y docker
-sudo service docker start
-sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-sudo usermod -a -G docker ec2-user
+
+# Install docker dependencies
+yum install -y docker
+service docker start
+curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+usermod -a -G docker ec2-user
+
+# Download docker-compose-prod from github
+yum -y install git
+git clone https://github.com/mathalro/matheusrosa-website/tree/main
+cd matheusrosa-website
