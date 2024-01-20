@@ -57,8 +57,15 @@ export class TrustStack extends cdk.Stack {
       resources: ["arn:aws:lambda:*:*:matheusrosa-*"],
     });
 
+    const assumeAsgRefreshRoles = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ["autoscaling:StartInstanceRefresh"],
+      resources: ["*"]
+    })
+
     githubActionRole.addToPolicy(assumeCdkDeploymentRoles);
     githubActionRole.addToPolicy(assumeLambdaDeploymentRoles);
+    githubActionRole.addToPolicy(assumeAsgRefreshRoles);
 
     new cdk.CfnOutput(this, 'github-actions-role-arn', {
       value: githubActionRole.roleArn,
