@@ -207,6 +207,7 @@ export class WebserverStack extends cdk.Stack {
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3ReadOnlyAccess'),
         iam.ManagedPolicy.fromAwsManagedPolicyName('SecretsManagerReadWrite'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('CloudWatchLogsFullAccess')
       ],
     });
 
