@@ -32,3 +32,19 @@ sudo yum -y install git
 git clone https://github.com/mathalro/matheusrosa-website.git
 cd matheusrosa-website
 docker-compose -f docker-compose.prod.yml up -d
+
+# Configure CW logs
+sudo yum install -y awslogs
+sudo sed -i s/us-east-1/eu-west-1/ /etc/awslogs/awscli.conf
+
+sudo echo "[/var/log/application-api]
+datetime_format = %b %d %H:%M:%S
+file = /var/log/application-api
+buffer_duration = 5000
+log_stream_name = {instance_id}
+initial_position = start_of_file
+log_group_name = /var/log/application-api" >> /etc/awslogs/awslogs.conf
+
+sudo systemctl start awslogsd
+sudo systemctl enable awslogsd.service
+
