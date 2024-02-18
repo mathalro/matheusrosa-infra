@@ -37,9 +37,9 @@ docker-compose -f docker-compose.prod.yml up -d
 sudo yum install -y awslogs
 sudo sed -i s/us-east-1/eu-west-1/ /etc/awslogs/awscli.conf
 
-sudo mkdir ~/appdata/
-sudo mkdir ~/appdata/logs/
-sudo touch ~/appdata/logs/application-api.log
+sudo mkdir /home/ec2-user/appdata/
+sudo mkdir /home/ec2-user/appdata/logs/
+sudo touch /home/ec2-user/appdata/logs/application-api.log
 
 sudo echo "
 [application-api]
