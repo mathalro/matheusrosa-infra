@@ -37,13 +37,17 @@ docker-compose -f docker-compose.prod.yml up -d
 sudo yum install -y awslogs
 sudo sed -i s/us-east-1/eu-west-1/ /etc/awslogs/awscli.conf
 
-sudo echo "[application-api.log]
+sudo mkdir ~/appdata/
+sudo mkdir ~/appdata/logs/
+sudo touch ~/appdata/logs/application-api.log
+
+sudo echo "[application-api]
 datetime_format = %b %d %H:%M:%S
 file = ~/appdata/logs/application-api.log
 buffer_duration = 5000
 log_stream_name = {instance_id}
 initial_position = start_of_file
-log_group_name = ~/appdata/logs/application-api.log" >> /etc/awslogs/awslogs.conf
+log_group_name = application-api" >> /etc/awslogs/awslogs.conf
 
 sudo systemctl start awslogsd
 sudo systemctl enable awslogsd.service
