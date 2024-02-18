@@ -41,9 +41,10 @@ sudo mkdir ~/appdata/
 sudo mkdir ~/appdata/logs/
 sudo touch ~/appdata/logs/application-api.log
 
-sudo echo "[application-api]
+sudo echo "
+[application-api]
 datetime_format = %b %d %H:%M:%S
-file = ~/appdata/logs/application-api.log
+file = /home/ec2-user/appdata/logs/application-api.log
 buffer_duration = 5000
 log_stream_name = {instance_id}
 initial_position = start_of_file
