@@ -183,7 +183,7 @@ export class WebserverStack extends cdk.Stack {
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MICRO),
       keyName: 'ec2-key-pair',
       securityGroup: sg,
-      associatePublicIpAddress: true,
+      associatePublicIpAddress: false,
       userData: ec2.UserData.custom(userDataScript),
       instanceProfile: instanceProfile,
     });
